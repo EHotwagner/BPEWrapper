@@ -262,7 +262,7 @@ As a game engine developer, I want to snapshot the entire physics world state to
 #### Callback System
 
 - **FR-013**: The wrapper MUST provide default narrow phase and pose integration callbacks that support per-body material lookup, collision filtering via group/mask bitmask comparison, gravity and damping application, and contact event collection into a per-frame buffer.
-- **FR-014**: Advanced users MUST be able to supply their own callback implementations, bypassing the wrapper's defaults entirely.
+- **FR-014**: Advanced users MUST be able to access the underlying BepuPhysics2 Simulation via an escape hatch, enabling them to supply their own callback implementations or modify simulation internals directly.
 
 #### Constraints
 
@@ -353,9 +353,9 @@ As a game engine developer, I want to snapshot the entire physics world state to
 ### Assumptions
 
 - The target BepuPhysics2 version is 2.4.x (latest stable).
-- The target runtime is .NET 8.0 or later.
+- The target runtime is .NET 10.0.
 - The wrapper is designed for a single-process game engine (not distributed physics).
 - Collision filtering supports up to 32 layers via bitmask, which is sufficient for most games.
 - The physics world is mutable (matching BepuPhysics2's design); the wrapper uses a functional-style API surface but acknowledges in-place mutation.
 - Default material properties and solver settings follow BepuPhysics2 recommended defaults.
-- Debug visualization (Story 12) and serialization (Story 13) are considered optional stretch goals.
+- Debug visualization (Story 12) and serialization (Story 13) are formally deferred to a future iteration. They are not in scope for the initial release.
