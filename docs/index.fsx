@@ -55,6 +55,7 @@ let pose = PhysicsWorld.getBodyPose sphere world
 (**
 ## Documentation
 
+- [Tutorial](tutorial/01-what-is-physics.html) — Step-by-step tutorial covering 3D physics from scratch
 - [Getting Started](getting-started.html) — Full walkthrough from zero to simulation
 - [ECS Integration](ecs-integration.html) — Bulk operations for data-oriented engines
 - [Architecture Decisions](adr/001-mutable-world.html) — Why the world is mutable
