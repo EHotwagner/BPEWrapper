@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>BepuFSharp.Tests</RootNamespace>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="WorldTests.fs" />
+    <Compile Include="ShapeTests.fs" />
+    <Compile Include="BodyTests.fs" />
+    <Compile Include="BulkOperationTests.fs" />
+    <Compile Include="ConstraintTests.fs" />
+    <Compile Include="ContactEventTests.fs" />
+    <Compile Include="QueryTests.fs" />
+    <Compile Include="PropertyTests.fs" />
+    <Compile Include="SurfaceAreaTests.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BepuFSharp\BepuFSharp.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Expecto" Version="10.*" />
+    <PackageReference Include="Expecto.FsCheck" Version="10.*" />
+    <PackageReference Include="FsCheck" Version="2.*" />
+  </ItemGroup>
+
+</Project>

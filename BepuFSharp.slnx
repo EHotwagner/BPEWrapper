@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="BepuFSharp.Tests/BepuFSharp.Tests.fsproj" />
+  <Project Path="BepuFSharp/BepuFSharp.fsproj" />
+</Solution>
