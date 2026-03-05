@@ -11,8 +11,6 @@
     <Compile Include="Diagnostics.fs" />
     <Compile Include="Shapes.fsi" />
     <Compile Include="Shapes.fs" />
-    <Compile Include="Materials.fsi" />
-    <Compile Include="Materials.fs" />
     <Compile Include="Bodies.fsi" />
     <Compile Include="Bodies.fs" />
     <Compile Include="Constraints.fsi" />

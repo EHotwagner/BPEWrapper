@@ -2,6 +2,15 @@ namespace BepuFSharp
 
 open System.Numerics
 
+/// <summary>
+/// BepuFSharp — an idiomatic F# wrapper for BepuPhysics2 v2.
+/// Provides typed handles, discriminated union shapes and constraints,
+/// pipeline-style world management, bulk ECS operations,
+/// collision events, raycasting, and per-body materials.
+/// </summary>
+[<System.Runtime.CompilerServices.CompilerGenerated>]
+module NamespaceDoc = begin end
+
 /// Opaque identifier for a dynamic or kinematic body in the physics world.
 [<Struct>]
 type BodyId = BodyId of int
