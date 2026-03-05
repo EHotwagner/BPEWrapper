@@ -11,5 +11,7 @@
     <Authors>BepuFSharp Contributors</Authors>
     <Description>Idiomatic F# wrapper for BepuPhysics2 v2</Description>
     <PackageOutputPath>$(HOME)/.local/share/nuget-local/</PackageOutputPath>
+    <RepositoryUrl>https://github.com/EHotwagner/BPEWrapper</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 </Project>
