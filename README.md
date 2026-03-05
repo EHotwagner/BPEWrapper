@@ -2,7 +2,7 @@
 
 An idiomatic F# wrapper for [BepuPhysics2](https://github.com/bepu/bepuphysics2) v2, designed for data-oriented game engines.
 
-**[Documentation](https://ehotwagner.github.io/BPEWrapper/)** · **[API Reference](https://ehotwagner.github.io/BPEWrapper/reference/bepufsharp.html)**
+**[Documentation](https://ehotwagner.github.io/BPEWrapper/)** · **[API Reference](https://ehotwagner.github.io/BPEWrapper/reference/index.html)**
 
 ## Quick Start
 
