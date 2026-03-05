@@ -279,10 +279,10 @@
 ### API Documentation (Constitution VI)
 
 - [x] T060 Run api-doc skill: ensure all .fsi files have XML doc comments with `<summary>` for every public module, type, function, and DU case; add usage examples to key functions (FR-031)
-- [ ] T061 Run doc-setup skill: install fsdocs-tool, create docs/ directory, configure MSBuild properties in Directory.Build.props (FR-037)
-- [ ] T062 [P] Run doc-examples skill: create docs/index.fsx (landing page), docs/getting-started.fsx (quick start tutorial), docs/ecs-integration.fsx (data-oriented ECS sync patterns) as literate scripts (FR-037)
-- [ ] T063 [P] Run doc-technical skill: create ADRs docs/adr/001-mutable-world.md, docs/adr/002-du-shapes-constraints.md, docs/adr/003-opaque-handles.md, docs/adr/004-callback-strategy.md (FR-038)
-- [ ] T064 Run doc-build skill: verify `dotnet fsdocs build` succeeds without errors (FR-037)
+- [x] T061 Run doc-setup skill: install fsdocs-tool, create docs/ directory, configure MSBuild properties in Directory.Build.props (FR-037)
+- [x] T062 [P] Run doc-examples skill: create docs/index.fsx (landing page), docs/getting-started.fsx (quick start tutorial), docs/ecs-integration.fsx (data-oriented ECS sync patterns) as literate scripts (FR-037)
+- [x] T063 [P] Run doc-technical skill: create ADRs docs/adr/001-mutable-world.md, docs/adr/002-du-shapes-constraints.md, docs/adr/003-opaque-handles.md, docs/adr/004-callback-strategy.md (FR-038)
+- [x] T064 Run doc-build skill: verify `dotnet fsdocs build` succeeds without errors (FR-037)
 
 ### Performance Validation
 
