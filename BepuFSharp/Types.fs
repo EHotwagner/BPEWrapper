@@ -2,6 +2,9 @@ namespace BepuFSharp
 
 open System.Numerics
 
+[<System.Runtime.CompilerServices.CompilerGenerated>]
+module NamespaceDoc = begin end
+
 [<Struct>]
 type BodyId = BodyId of int
 

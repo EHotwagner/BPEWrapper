@@ -62,4 +62,20 @@ let pose = PhysicsWorld.getBodyPose sphere world
 ## API Reference
 
 See the [API Reference](reference/index.html) generated from `.fsi` signature files.
+
+## Building the Documentation
+
+The documentation site is generated from source using [FSharp.Formatting](https://fsprojects.github.io/FSharp.Formatting/).
+It is not committed to the repository — build it locally:
+
+```bash
+dotnet tool restore
+dotnet fsdocs build
+```
+
+Then open `output/index.html` in a browser. For live-reload during editing:
+
+```bash
+dotnet fsdocs watch
+```
 *)
