@@ -1,0 +1,32 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.nupkg
+*.snupkg
+packages/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.sln.DotSettings.user
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+publish/
+artifacts/
+
+# FSharp.Formatting
+tmp/
+output/
+.fsdocs/
+
+# Misc
+*.tmp
+*.swp
+*.log

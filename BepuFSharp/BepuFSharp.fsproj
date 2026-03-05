@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>BepuFSharp</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Types.fsi" />
+    <Compile Include="Types.fs" />
+    <Compile Include="Diagnostics.fsi" />
+    <Compile Include="Diagnostics.fs" />
+    <Compile Include="Shapes.fsi" />
+    <Compile Include="Shapes.fs" />
+    <Compile Include="Materials.fsi" />
+    <Compile Include="Materials.fs" />
+    <Compile Include="Bodies.fsi" />
+    <Compile Include="Bodies.fs" />
+    <Compile Include="Constraints.fsi" />
+    <Compile Include="Constraints.fs" />
+    <Compile Include="Interop.fs" />
+    <Compile Include="ContactEvents.fs" />
+    <Compile Include="Queries.fs" />
+    <Compile Include="Callbacks.fs" />
+    <Compile Include="PhysicsWorld.fsi" />
+    <Compile Include="PhysicsWorld.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepuPhysics" Version="2.4.0" />
+    <PackageReference Include="BepuUtilities" Version="2.4.0" />
+  </ItemGroup>
+
+</Project>
