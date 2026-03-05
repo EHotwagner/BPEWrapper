@@ -10,15 +10,15 @@ let bodyA = PhysicsWorld.addBody (DynamicBodyDesc.create sphereShape (Pose.ofPos
 let bodyB = PhysicsWorld.addBody (DynamicBodyDesc.create sphereShape (Pose.ofPosition (Vector3(2.0f, 5.0f, 0.0f))) 1.0f) world
 
 let spring = SpringConfig.create 30.0f 1.0f
-let _ballSocket = PhysicsWorld.addConstraint bodyA bodyB
-    (ConstraintDesc.BallSocket(Vector3(1.0f, 0.0f, 0.0f), Vector3(-1.0f, 0.0f, 0.0f), spring)) world
+let _ballSocket =
+    PhysicsWorld.addConstraint bodyA bodyB (ConstraintDesc.BallSocket(Vector3(1.0f, 0.0f, 0.0f), Vector3(-1.0f, 0.0f, 0.0f), spring)) world
 printfn "Ball socket constraint created"
 
 // Create a welded pair
 let bodyC = PhysicsWorld.addBody (DynamicBodyDesc.create sphereShape (Pose.ofPosition (Vector3(5.0f, 5.0f, 0.0f))) 1.0f) world
 let bodyD = PhysicsWorld.addBody (DynamicBodyDesc.create sphereShape (Pose.ofPosition (Vector3(5.0f, 6.0f, 0.0f))) 1.0f) world
-let _weld = PhysicsWorld.addConstraint bodyC bodyD
-    (ConstraintDesc.Weld(Vector3(0.0f, 0.5f, 0.0f), Quaternion.Identity, spring)) world
+let _weld =
+    PhysicsWorld.addConstraint bodyC bodyD (ConstraintDesc.Weld(Vector3(0.0f, 0.5f, 0.0f), Quaternion.Identity, spring)) world
 printfn "Weld constraint created"
 
 // Step and observe

@@ -227,39 +227,29 @@
 
 ---
 
-## Phase 12: User Story 12 - Debug Visualization Data (Priority: P3, Optional)
+## Phase 12: User Story 12 - Debug Visualization Data (Priority: P3, DEFERRED)
+
+**Status**: Formally deferred to a future iteration. Not in scope for initial release.
 
 **Goal**: Extract shape wireframes, contact points, constraint anchors, and bounding boxes as vertex data for debug rendering.
 
-**Independent Test**: Create a world with bodies and constraints, extract debug vertex data, verify it contains expected geometry.
-
-### Tests for US12
+### Deferred Tasks
 
 - [ ] T055a [P] [US12] Write debug visualization tests in BepuFSharp.Tests/WorldTests.fs (append): create world with sphere body, extract debug data, verify vertex array is non-empty and contains expected wireframe vertex count for sphere
-
-### Implementation for US12
-
 - [ ] T055 [US12] Design and implement debug visualization data extraction: shape wireframe generation (sphere -> line segments, box -> 12 edges, etc.), contact point extraction, constraint anchor positions, AABB extraction; expose as PhysicsWorld.getDebugData returning vertex arrays in BepuFSharp/PhysicsWorld.fsi and BepuFSharp/PhysicsWorld.fs
-
-**Checkpoint**: Debug visualization data available for rendering.
 
 ---
 
-## Phase 13: User Story 13 - Serialization / Snapshot (Priority: P3, Optional)
+## Phase 13: User Story 13 - Serialization / Snapshot (Priority: P3, DEFERRED)
+
+**Status**: Formally deferred to a future iteration. Not in scope for initial release.
 
 **Goal**: Snapshot the entire physics world state to a byte array and restore it for save/load and network rollback.
 
-**Independent Test**: Create a world, add bodies, step, snapshot, restore, verify restored world matches original.
-
-### Tests for US13
+### Deferred Tasks
 
 - [ ] T056a [P] [US13] Write snapshot/restore tests in BepuFSharp.Tests/WorldTests.fs (append): create world, add bodies, step, snapshot to byte array, restore to new world, verify body poses match original within tolerance
-
-### Implementation for US13
-
 - [ ] T056 [US13] Design and implement world snapshot/restore: serialize all body poses/velocities/materials/filters/constraints/shapes to byte array; restore by creating a new world and re-adding all entities; expose as PhysicsWorld.snapshot and PhysicsWorld.restore in BepuFSharp/PhysicsWorld.fsi and BepuFSharp/PhysicsWorld.fs
-
-**Checkpoint**: World state can be serialized and deserialized.
 
 ---
 
@@ -292,8 +282,8 @@
 
 - [x] T066 Verify `dotnet build` succeeds with zero warnings under TreatWarningsAsErrors + warnon:1182 (SC-004)
 - [x] T067 Verify `dotnet pack` produces valid .nupkg to ~/.local/share/nuget-local/ (SC-010)
-- [ ] T068 Verify all numbered example scripts under scripts/examples/ run without error against latest packed build (SC-011)
-- [ ] T069 Run quickstart.md validation: execute the "Hello Physics" code from quickstart.md and verify it works end-to-end (SC-001)
+- [x] T068 Verify all numbered example scripts under scripts/examples/ run without error against latest packed build (SC-011)
+- [x] T069 Run quickstart.md validation: execute the "Hello Physics" code from quickstart.md and verify it works end-to-end (SC-001)
 - [x] T070 Update surface-area baselines for any modules changed during polish phase in BepuFSharp.Tests/baselines/
 
 ---

@@ -5,8 +5,8 @@
 
 ## Prerequisites
 
-- .NET 8.0 SDK
-- F# 8.0 (included with .NET 8.0 SDK)
+- .NET 10.0 SDK
+- F# 8.0 (included with .NET 10.0 SDK)
 
 ## Build
 

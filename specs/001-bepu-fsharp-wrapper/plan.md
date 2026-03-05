@@ -9,11 +9,11 @@ Create an idiomatic F# wrapper library around BepuPhysics2 v2 for use in a custo
 
 ## Technical Context
 
-**Language/Version**: F# 8.0 on .NET 8.0
+**Language/Version**: F# 8.0 on .NET 10.0
 **Primary Dependencies**: BepuPhysics 2.4.0, BepuUtilities 2.4.0, System.Numerics.Vectors
 **Storage**: N/A (in-memory physics simulation)
 **Testing**: Expecto (test framework) + FsCheck (property-based testing)
-**Target Platform**: Cross-platform .NET 8.0 (Linux, Windows, macOS)
+**Target Platform**: Cross-platform .NET 10.0 (Linux, Windows, macOS)
 **Project Type**: Library (NuGet package)
 **Performance Goals**: <1ms bulk readback for 10K bodies; <5% overhead vs raw BepuPhysics2; zero managed allocations on hot path
 **Constraints**: Zero-allocation on step/read/write hot path; all public modules require .fsi signature files; mutable world with functional API surface
@@ -31,7 +31,7 @@ Create an idiomatic F# wrapper library around BepuPhysics2 v2 for use in a custo
 | IV. Observability and Safe Failure Handling | Structured diagnostics for operationally significant events | PASS | FR-036; Diagnostics module planned with structured error types |
 | V. Scripting Accessibility | Prelude script and numbered examples planned | PASS | FR-034/035; scripts/prelude.fsx + scripts/examples/ planned |
 | VI. Comprehensive Documentation | FSharp.Formatting setup, XML docs in .fsi, literate scripts, ADRs | PASS | FR-037/038; docs/ with literate scripts and ADRs planned |
-| Eng: Primary Stack | F# on .NET | PASS | F# 8.0 / .NET 8.0 |
+| Eng: Primary Stack | F# on .NET | PASS | F# 8.0 / .NET 10.0 |
 | Eng: dotnet pack | Package to local NuGet store | PASS | FR-033; Directory.Build.props with PackageOutputPath |
 | Eng: .fsi files | Every public module has .fsi | PASS | Project structure shows .fsi for each public .fs |
 | Eng: Surface-area baselines | Baseline files validated in CI | PASS | SurfaceAreaTests.fs planned |
