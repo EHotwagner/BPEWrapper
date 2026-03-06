@@ -1,6 +1,6 @@
 (**
 ---
-title: ECS Integration
+title: Game Loop Integration
 category: Guides
 categoryindex: 1
 index: 2
@@ -8,19 +8,19 @@ index: 2
 *)
 
 (**
-# ECS Integration Patterns
+# Game Loop Integration Patterns
 
-BepuFSharp is designed for data-oriented game engines that use Entity Component System (ECS)
-architectures. The key integration point is bulk read/write of poses and velocities using
-pre-allocated arrays — zero managed allocations on the hot path.
+BepuFSharp is designed for data-oriented game engines. The key integration point is bulk
+read/write of poses and velocities using pre-allocated arrays — zero managed allocations
+on the hot path. This works with any engine architecture, whether ECS-based or not.
 
 ## The Sync Loop
 
-A typical game loop synchronizes physics state with ECS transforms:
+A typical game loop synchronizes physics state with engine transforms:
 
-1. **Write** kinematic targets from ECS to physics (e.g., animated platforms)
+1. **Write** kinematic targets from the engine to physics (e.g., animated platforms)
 2. **Step** the simulation
-3. **Read** dynamic body poses from physics back to ECS transforms
+3. **Read** dynamic body poses from physics back to engine transforms
 *)
 
 #r "nuget: BepuPhysics, 2.4.0"
@@ -37,7 +37,7 @@ let world = PhysicsWorld.create PhysicsConfig.defaults
 (**
 ## Setting Up Bodies
 
-Create an array of body handles — this is your ECS physics component:
+Create an array of body handles — this is your physics component array:
 *)
 
 let shape = PhysicsWorld.addShape (PhysicsShape.Sphere 0.5f) world
@@ -73,7 +73,7 @@ for _frame in 1 .. 60 do
     PhysicsWorld.step (1.0f / 60.0f) world
     PhysicsWorld.readPoses bodies poses world
     PhysicsWorld.readVelocities bodies velocities world
-    // In a real engine: copy poses array into ECS transform components
+    // In a real engine: copy poses array into engine transform components
 
 (**
 After the loop, `poses` contains the current position/orientation for all 1000 bodies:
@@ -112,7 +112,7 @@ PhysicsWorld.writeVelocities bodies velocities world
   via inline interop functions. No boxing, no allocation.
 - The arrays can be pinned and passed to native rendering code if needed.
 - For maximum throughput, keep body handles in a contiguous array that matches
-  your ECS archetype storage order.
+  your engine's component storage order.
 *)
 
 PhysicsWorld.destroy world

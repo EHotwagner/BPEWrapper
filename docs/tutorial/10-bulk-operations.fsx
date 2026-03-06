@@ -1,6 +1,6 @@
 (**
 ---
-title: Bulk Operations and ECS Integration
+title: Bulk Operations and Game Loop Integration
 category: Tutorial
 categoryindex: 3
 index: 10
@@ -8,15 +8,15 @@ index: 10
 *)
 
 (**
-# Bulk Operations and ECS Integration
+# Bulk Operations and Game Loop Integration
 
 **Prerequisites**: [Chapter 1](01-what-is-physics.html),
 [Chapter 3: Bodies](03-bodies.html),
 [Chapter 4: Simulation Loop](04-simulation-loop.html)
 
 This chapter explains how to efficiently synchronize physics state with
-a game engine using **bulk operations**, and introduces the
-Entity-Component-System (ECS) architecture pattern.
+a game engine using **bulk operations**. These operations work with any
+data-oriented engine architecture.
 
 ## The Problem: Per-Body Reads Are Slow
 
@@ -55,7 +55,10 @@ Many modern game engines use an **Entity-Component-System** architecture:
 - **System**: A function that processes all entities with certain
   components (PhysicsSystem, RenderSystem, AISystem).
 
-The physics sync loop in an ECS game looks like this:
+ECS is one popular data-oriented architecture, but bulk operations work
+equally well with non-ECS engines that use plain arrays and structs.
+
+The physics sync loop in a data-oriented game looks like this:
 
 ```text
   Game Frame:
@@ -65,7 +68,7 @@ The physics sync loop in an ECS game looks like this:
            |
            v
   +--------+---------+
-  |  writePoses      |   Push ECS positions into physics
+  |  writePoses      |   Push engine positions into physics
   +--------+---------+
            |
            v
@@ -76,7 +79,7 @@ The physics sync loop in an ECS game looks like this:
            |
            v
   +--------+---------+
-  |  readPoses       |   Pull physics results back to ECS
+  |  readPoses       |   Pull physics results back to engine
   +--------+---------+
            |
            v
@@ -154,7 +157,7 @@ let lastPose = poses.[bodyCount - 1]
 
 (**
 All 100 poses are now in the `poses` array, ready to be copied back
-into your game's ECS component storage.
+into your game's component storage.
 
 ## Bulk Read: readVelocities
 
@@ -218,7 +221,7 @@ let scatteredPose = poses.[0]
 (*** include-value: scatteredPose ***)
 
 (**
-## The Full ECS Sync Pattern
+## The Full Game Loop Sync Pattern
 
 In a real game, the sync loop each frame looks like this:
 
@@ -262,7 +265,7 @@ Bulk operations let you read and write physics state for many bodies
 in a single call. `readPoses` and `readVelocities` pull data from
 physics into pre-allocated arrays. `writePoses` and `writeVelocities`
 push data from your game into physics. This pattern is essential for
-ECS integration where thousands of entities need synchronized each
+game loop integration where thousands of entities need synchronized each
 frame.
 
 **Next**: [Putting It All Together](11-capstone.html)

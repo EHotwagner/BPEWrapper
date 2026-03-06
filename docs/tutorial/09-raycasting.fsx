@@ -259,5 +259,5 @@ Raycasting fires an invisible ray through the physics world.
 Use raycasts for line of sight, bullet traces, ground detection, and
 mouse picking.
 
-**Next**: [Bulk Operations and ECS Integration](10-bulk-operations.html)
+**Next**: [Bulk Operations and Game Loop Integration](10-bulk-operations.html)
 *)

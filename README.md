@@ -1,5 +1,7 @@
 # BepuFSharp
 
+*Created using [speckit](https://github.com/github/spec-kit) with Claude Code (Opus 4.6). See the [project constitution](.specify/memory/constitution.md) and [documentation skills](.specify/memory/constitution.md#vi-comprehensive-documentation).*
+
 An idiomatic F# wrapper for [BepuPhysics2](https://github.com/bepu/bepuphysics2) v2, designed for data-oriented game engines.
 
 **[Documentation](https://ehotwagner.github.io/BPEWrapper/)** · **[API Reference](https://ehotwagner.github.io/BPEWrapper/reference/index.html)**
@@ -95,7 +97,7 @@ for evt in events do
 
 ### Per-body allocation on readback → Zero-allocation bulk ops
 
-Synchronizing physics with an ECS requires reading thousands of poses per frame. BepuFSharp provides bulk operations that write directly into pre-allocated arrays — zero managed heap allocation on the hot path.
+Synchronizing physics with a game loop (whether ECS-based or not) requires reading thousands of poses per frame. BepuFSharp provides bulk operations that write directly into pre-allocated arrays — zero managed heap allocation on the hot path.
 
 ```fsharp
 let poses = Array.zeroCreate<Pose> bodyIds.Length
@@ -114,7 +116,7 @@ PhysicsWorld.readPoses bodyIds poses world  // no allocation
 | Contact events | Manual thread-safe buffering | `getContactEvents` returns flat struct array |
 | Collision filtering | Implement in callback struct | `CollisionFilter` with `group`/`mask` per body |
 | Materials | Implement in callback struct | `MaterialProperties` per body with auto-blending |
-| Bulk ECS sync | Manual loop + struct access | `readPoses`/`writePoses` — zero allocation |
+| Bulk game loop sync | Manual loop + struct access | `readPoses`/`writePoses` — zero allocation |
 | Raycasting | Implement `IRayHitHandler` struct | `raycast`/`raycastAll` returning `RayHit option` / `RayHit[]` |
 | FSI scripting | Complex `#r` setup + callback boilerplate | `#load "prelude.fsx"` and go |
 | Escape hatch | N/A | `PhysicsWorld.simulation` for raw access |
@@ -127,7 +129,7 @@ PhysicsWorld.readPoses bodyIds poses world  // no allocation
 - 32-layer collision filtering via bitmask
 - Per-body material properties with friction/spring blending
 - Double-buffered contact events (began/persisted/ended)
-- Bulk pose and velocity read/write for ECS integration
+- Bulk pose and velocity read/write for game loop integration
 - `.fsi` signature files for every public module
 - Surface-area baseline tests preventing accidental API drift
 - 60 tests (Expecto + FsCheck property tests)
