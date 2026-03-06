@@ -18,7 +18,7 @@ designed for data-oriented game engines.
 - **Functional API** — Pipeline-friendly module functions (`world |> PhysicsWorld.addBody desc`)
 - **Type-safe handles** — Opaque `BodyId`, `StaticId`, `ShapeId`, `ConstraintId` prevent handle misuse
 - **Discriminated unions** — `PhysicsShape` (8 variants) and `ConstraintDesc` (10 variants) for exhaustive matching
-- **Zero-allocation bulk ops** — `readPoses`/`writePoses` populate pre-allocated arrays for ECS sync
+- **Zero-allocation bulk ops** — `readPoses`/`writePoses` populate pre-allocated arrays for game loop sync
 - **Contact events** — Double-buffered began/persisted/ended events as flat struct arrays
 - **Collision filtering** — 32-layer bitmask system via group/mask fields
 - **Raycasting** — Single-hit and multi-hit queries returning typed results
@@ -57,7 +57,7 @@ let pose = PhysicsWorld.getBodyPose sphere world
 
 - [Tutorial](tutorial/01-what-is-physics.html) — Step-by-step tutorial covering 3D physics from scratch
 - [Getting Started](getting-started.html) — Full walkthrough from zero to simulation
-- [ECS Integration](ecs-integration.html) — Bulk operations for data-oriented engines
+- [Game Loop Integration](game-loop-integration.html) — Bulk operations for data-oriented engines
 - [Architecture Decisions](adr/001-mutable-world.html) — Why the world is mutable
 
 ## API Reference

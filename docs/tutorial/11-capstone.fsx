@@ -330,7 +330,7 @@ Congratulations! You have built a complete physics scene using every
 major feature of BepuFSharp. You now know how to create worlds, register
 shapes, place bodies, configure materials, connect bodies with
 constraints, filter collisions, cast rays, and use bulk operations for
-efficient ECS integration.
+efficient game loop integration.
 
 **Next**: [Glossary](12-glossary.html)
 *)
