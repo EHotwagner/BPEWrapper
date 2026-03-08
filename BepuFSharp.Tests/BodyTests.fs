@@ -114,4 +114,108 @@ let tests =
             let lowXDist = abs (lowFricPose.Position.X - 5.0f)
             Expect.isTrue (lowXDist >= highXDist * 0.5f || lowFricPose.Position.Y < highFricPose.Position.Y)
                 "Low friction body should slide more or fall further on slope"
+
+        testCase "bodyExists returns true for active body" <| fun _ ->
+            use world = PhysicsWorld.create PhysicsConfig.defaults
+            let shape = PhysicsWorld.addShape (PhysicsShape.Sphere 1.0f) world
+            let desc = DynamicBodyDesc.create shape Pose.identity 1.0f
+            let bodyId = PhysicsWorld.addBody desc world
+            Expect.isTrue (PhysicsWorld.bodyExists bodyId world) "Active body should exist"
+
+        testCase "bodyExists returns false for removed body" <| fun _ ->
+            use world = PhysicsWorld.create PhysicsConfig.defaults
+            let shape = PhysicsWorld.addShape (PhysicsShape.Sphere 1.0f) world
+            let desc = DynamicBodyDesc.create shape Pose.identity 1.0f
+            let bodyId = PhysicsWorld.addBody desc world
+            PhysicsWorld.removeBody bodyId world
+            Expect.isFalse (PhysicsWorld.bodyExists bodyId world) "Removed body should not exist"
+
+        testCase "staticExists returns true for active static" <| fun _ ->
+            use world = PhysicsWorld.create PhysicsConfig.defaults
+            let shape = PhysicsWorld.addShape (PhysicsShape.Box(10.0f, 1.0f, 10.0f)) world
+            let desc = StaticBodyDesc.create shape Pose.identity
+            let staticId = PhysicsWorld.addStatic desc world
+            Expect.isTrue (PhysicsWorld.staticExists staticId world) "Active static should exist"
+
+        testCase "staticExists returns false for removed static" <| fun _ ->
+            use world = PhysicsWorld.create PhysicsConfig.defaults
+            let shape = PhysicsWorld.addShape (PhysicsShape.Box(10.0f, 1.0f, 10.0f)) world
+            let desc = StaticBodyDesc.create shape Pose.identity
+            let staticId = PhysicsWorld.addStatic desc world
+            PhysicsWorld.removeStatic staticId world
+            Expect.isFalse (PhysicsWorld.staticExists staticId world) "Removed static should not exist"
+
+        testCase "tryGetBodyPose returns ValueSome for active body" <| fun _ ->
+            use world = PhysicsWorld.create PhysicsConfig.defaults
+            let shape = PhysicsWorld.addShape (PhysicsShape.Sphere 1.0f) world
+            let pos = Vector3(1.0f, 2.0f, 3.0f)
+            let desc = DynamicBodyDesc.create shape (Pose.ofPosition pos) 1.0f
+            let bodyId = PhysicsWorld.addBody desc world
+            match PhysicsWorld.tryGetBodyPose bodyId world with
+            | ValueSome pose ->
+                Expect.floatClose Accuracy.medium (float pose.Position.X) 1.0 "X should match"
+            | ValueNone -> failtest "Should return ValueSome for active body"
+
+        testCase "tryGetBodyPose returns ValueNone for removed body" <| fun _ ->
+            use world = PhysicsWorld.create PhysicsConfig.defaults
+            let shape = PhysicsWorld.addShape (PhysicsShape.Sphere 1.0f) world
+            let desc = DynamicBodyDesc.create shape Pose.identity 1.0f
+            let bodyId = PhysicsWorld.addBody desc world
+            PhysicsWorld.removeBody bodyId world
+            match PhysicsWorld.tryGetBodyPose bodyId world with
+            | ValueNone -> ()
+            | ValueSome _ -> failtest "Should return ValueNone for removed body"
+
+        testCase "tryGetBodyVelocity returns ValueSome for active body" <| fun _ ->
+            use world = PhysicsWorld.create PhysicsConfig.defaults
+            let shape = PhysicsWorld.addShape (PhysicsShape.Sphere 1.0f) world
+            let desc = DynamicBodyDesc.create shape Pose.identity 1.0f
+            let bodyId = PhysicsWorld.addBody desc world
+            match PhysicsWorld.tryGetBodyVelocity bodyId world with
+            | ValueSome _ -> ()
+            | ValueNone -> failtest "Should return ValueSome for active body"
+
+        testCase "tryGetBodyVelocity returns ValueNone for removed body" <| fun _ ->
+            use world = PhysicsWorld.create PhysicsConfig.defaults
+            let shape = PhysicsWorld.addShape (PhysicsShape.Sphere 1.0f) world
+            let desc = DynamicBodyDesc.create shape Pose.identity 1.0f
+            let bodyId = PhysicsWorld.addBody desc world
+            PhysicsWorld.removeBody bodyId world
+            match PhysicsWorld.tryGetBodyVelocity bodyId world with
+            | ValueNone -> ()
+            | ValueSome _ -> failtest "Should return ValueNone for removed body"
+
+        testCase "trySetBodyPose returns true for active body" <| fun _ ->
+            use world = PhysicsWorld.create PhysicsConfig.defaults
+            let shape = PhysicsWorld.addShape (PhysicsShape.Sphere 1.0f) world
+            let desc = DynamicBodyDesc.create shape Pose.identity 1.0f
+            let bodyId = PhysicsWorld.addBody desc world
+            let result = PhysicsWorld.trySetBodyPose bodyId (Pose.ofPosition (Vector3(5.0f, 0.0f, 0.0f))) world
+            Expect.isTrue result "Should return true for active body"
+
+        testCase "trySetBodyPose returns false for removed body" <| fun _ ->
+            use world = PhysicsWorld.create PhysicsConfig.defaults
+            let shape = PhysicsWorld.addShape (PhysicsShape.Sphere 1.0f) world
+            let desc = DynamicBodyDesc.create shape Pose.identity 1.0f
+            let bodyId = PhysicsWorld.addBody desc world
+            PhysicsWorld.removeBody bodyId world
+            let result = PhysicsWorld.trySetBodyPose bodyId Pose.identity world
+            Expect.isFalse result "Should return false for removed body"
+
+        testCase "trySetBodyVelocity returns true for active body" <| fun _ ->
+            use world = PhysicsWorld.create PhysicsConfig.defaults
+            let shape = PhysicsWorld.addShape (PhysicsShape.Sphere 1.0f) world
+            let desc = DynamicBodyDesc.create shape Pose.identity 1.0f
+            let bodyId = PhysicsWorld.addBody desc world
+            let result = PhysicsWorld.trySetBodyVelocity bodyId Velocity.zero world
+            Expect.isTrue result "Should return true for active body"
+
+        testCase "trySetBodyVelocity returns false for removed body" <| fun _ ->
+            use world = PhysicsWorld.create PhysicsConfig.defaults
+            let shape = PhysicsWorld.addShape (PhysicsShape.Sphere 1.0f) world
+            let desc = DynamicBodyDesc.create shape Pose.identity 1.0f
+            let bodyId = PhysicsWorld.addBody desc world
+            PhysicsWorld.removeBody bodyId world
+            let result = PhysicsWorld.trySetBodyVelocity bodyId Velocity.zero world
+            Expect.isFalse result "Should return false for removed body"
     ]

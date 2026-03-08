@@ -28,3 +28,9 @@ type PhysicsShape =
     | Compound of children: CompoundChild[]
     /// Triangle mesh shape.
     | Mesh of triangles: (Vector3 * Vector3 * Vector3)[]
+
+/// Functions for working with physics shapes.
+[<RequireQualifiedAccess>]
+module PhysicsShape =
+    /// Return a human-readable description of the shape with its parameters.
+    val describe: PhysicsShape -> string

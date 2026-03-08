@@ -87,3 +87,46 @@ module PhysicsWorld =
 
     /// Get the underlying BufferPool (escape hatch).
     val bufferPool: PhysicsWorld -> BufferPool
+
+    /// Check whether a body ID refers to an active body in the world.
+    val bodyExists: BodyId -> PhysicsWorld -> bool
+
+    /// Check whether a static ID refers to an active static in the world.
+    val staticExists: StaticId -> PhysicsWorld -> bool
+
+    /// Get the pose of a body, or ValueNone if the body has been removed.
+    val tryGetBodyPose: BodyId -> PhysicsWorld -> Pose voption
+
+    /// Get the velocity of a body, or ValueNone if the body has been removed.
+    val tryGetBodyVelocity: BodyId -> PhysicsWorld -> Velocity voption
+
+    /// Set the pose of a body. Returns true if successful, false if the body has been removed.
+    val trySetBodyPose: BodyId -> Pose -> PhysicsWorld -> bool
+
+    /// Set the velocity of a body. Returns true if successful, false if the body has been removed.
+    val trySetBodyVelocity: BodyId -> Velocity -> PhysicsWorld -> bool
+
+    /// Apply an impulse at the given offset from the body's center of mass. No-op if the body has been removed.
+    val applyImpulse: BodyId -> impulse: Vector3 -> offset: Vector3 -> PhysicsWorld -> unit
+
+    /// Apply a linear impulse to the body's center of mass. No-op if the body has been removed.
+    val applyLinearImpulse: BodyId -> impulse: Vector3 -> PhysicsWorld -> unit
+
+    /// Apply an angular impulse (torque) to the body. No-op if the body has been removed.
+    val applyAngularImpulse: BodyId -> impulse: Vector3 -> PhysicsWorld -> unit
+
+    /// Return all active body IDs (dynamic and kinematic) in the world.
+    val getAllBodyIds: PhysicsWorld -> BodyId[]
+
+    /// Return all active static IDs in the world.
+    val getAllStaticIds: PhysicsWorld -> StaticId[]
+
+    /// Set the gravity vector for the physics world. Takes effect on the next step.
+    val setGravity: Vector3 -> PhysicsWorld -> unit
+
+    /// Return the current gravity vector.
+    val getGravity: PhysicsWorld -> Vector3
+
+    /// Return the shape associated with a body, or None if the body has been removed.
+    /// ConvexHull, Compound, and Mesh shapes return simplified representations.
+    val getBodyShape: BodyId -> PhysicsWorld -> PhysicsShape option

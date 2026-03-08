@@ -8,7 +8,7 @@ open BepuUtilities
 open BepuUtilities.Memory
 
 [<Sealed>]
-type PhysicsWorld internal (sim: Simulation, pool: BufferPool, threadDispatcher: ThreadDispatcher option, config: PhysicsConfig, eventBuffer: ContactEvents.ContactEventBuffer, materialTable: Collections.Generic.Dictionary<int, MaterialProperties>, filterTable: Collections.Generic.Dictionary<int, CollisionFilter>) =
+type PhysicsWorld internal (sim: Simulation, pool: BufferPool, threadDispatcher: ThreadDispatcher option, config: PhysicsConfig, eventBuffer: ContactEvents.ContactEventBuffer, materialTable: Collections.Generic.Dictionary<int, MaterialProperties>, filterTable: Collections.Generic.Dictionary<int, CollisionFilter>, getGravityFn: unit -> Vector3, setGravityFn: Vector3 -> unit) =
     let mutable disposed = false
 
     member internal _.Sim = sim
@@ -19,6 +19,8 @@ type PhysicsWorld internal (sim: Simulation, pool: BufferPool, threadDispatcher:
     member internal _.Config = config
     member internal _.EventBuffer = eventBuffer
     member internal _.IsDisposed = disposed
+    member internal _.GetGravity() = getGravityFn()
+    member internal _.SetGravity(g) = setGravityFn g
 
     member internal _.ThrowIfDisposed() =
         if disposed then
@@ -62,7 +64,10 @@ module PhysicsWorld =
                 null,
                 Nullable()
             )
-        new PhysicsWorld(sim, pool, threadDispatcher, config, eventBuffer, materialTable, filterTable)
+        let typedPoseIntegrator = sim.PoseIntegrator :?> PoseIntegrator<Callbacks.DefaultPoseIntegratorCallbacks>
+        let getGravity () = typedPoseIntegrator.Callbacks.Gravity
+        let setGravity (g: Vector3) = typedPoseIntegrator.Callbacks.Gravity <- g
+        new PhysicsWorld(sim, pool, threadDispatcher, config, eventBuffer, materialTable, filterTable, getGravity, setGravity)
 
     let destroy (world: PhysicsWorld) : unit =
         (world :> IDisposable).Dispose()
@@ -416,3 +421,128 @@ module PhysicsWorld =
     let bufferPool (world: PhysicsWorld) : BufferPool =
         world.ThrowIfDisposed()
         world.Pool
+
+    let bodyExists (bodyId: BodyId) (world: PhysicsWorld) : bool =
+        world.ThrowIfDisposed()
+        let handle = Interop.bodyIdToHandle bodyId
+        world.Sim.Bodies.BodyExists(handle)
+
+    let staticExists (staticId: StaticId) (world: PhysicsWorld) : bool =
+        world.ThrowIfDisposed()
+        let handle = Interop.staticIdToHandle staticId
+        world.Sim.Statics.StaticExists(handle)
+
+    let tryGetBodyPose (bodyId: BodyId) (world: PhysicsWorld) : Pose voption =
+        world.ThrowIfDisposed()
+        let handle = Interop.bodyIdToHandle bodyId
+        if world.Sim.Bodies.BodyExists(handle) then
+            ValueSome(Interop.rigidToPose world.Sim.Bodies.[handle].Pose)
+        else
+            ValueNone
+
+    let tryGetBodyVelocity (bodyId: BodyId) (world: PhysicsWorld) : Velocity voption =
+        world.ThrowIfDisposed()
+        let handle = Interop.bodyIdToHandle bodyId
+        if world.Sim.Bodies.BodyExists(handle) then
+            ValueSome(Interop.bepuToVelocity world.Sim.Bodies.[handle].Velocity)
+        else
+            ValueNone
+
+    let trySetBodyPose (bodyId: BodyId) (pose: Pose) (world: PhysicsWorld) : bool =
+        world.ThrowIfDisposed()
+        let handle = Interop.bodyIdToHandle bodyId
+        if world.Sim.Bodies.BodyExists(handle) then
+            world.Sim.Bodies.[handle].Pose <- Interop.poseToRigid pose
+            true
+        else
+            false
+
+    let trySetBodyVelocity (bodyId: BodyId) (velocity: Velocity) (world: PhysicsWorld) : bool =
+        world.ThrowIfDisposed()
+        let handle = Interop.bodyIdToHandle bodyId
+        if world.Sim.Bodies.BodyExists(handle) then
+            world.Sim.Bodies.[handle].Velocity <- Interop.velocityToBepu velocity
+            true
+        else
+            false
+
+    let applyImpulse (bodyId: BodyId) (impulse: Vector3) (offset: Vector3) (world: PhysicsWorld) : unit =
+        world.ThrowIfDisposed()
+        let handle = Interop.bodyIdToHandle bodyId
+        if world.Sim.Bodies.BodyExists(handle) then
+            let mutable imp = impulse
+            let mutable off = offset
+            world.Sim.Bodies.[handle].ApplyImpulse(&imp, &off)
+
+    let applyLinearImpulse (bodyId: BodyId) (impulse: Vector3) (world: PhysicsWorld) : unit =
+        world.ThrowIfDisposed()
+        let handle = Interop.bodyIdToHandle bodyId
+        if world.Sim.Bodies.BodyExists(handle) then
+            let mutable imp = impulse
+            world.Sim.Bodies.[handle].ApplyLinearImpulse(&imp)
+
+    let applyAngularImpulse (bodyId: BodyId) (impulse: Vector3) (world: PhysicsWorld) : unit =
+        world.ThrowIfDisposed()
+        let handle = Interop.bodyIdToHandle bodyId
+        if world.Sim.Bodies.BodyExists(handle) then
+            let mutable imp = impulse
+            world.Sim.Bodies.[handle].ApplyAngularImpulse(&imp)
+
+    let getAllBodyIds (world: PhysicsWorld) : BodyId[] =
+        world.ThrowIfDisposed()
+        let bodies = world.Sim.Bodies
+        let result = Collections.Generic.List<BodyId>()
+        for setIndex in 0 .. bodies.Sets.Length - 1 do
+            let set = bodies.Sets.[setIndex]
+            if set.Allocated then
+                for i in 0 .. set.Count - 1 do
+                    result.Add(Interop.handleToBodyId set.IndexToHandle.[i])
+        result.ToArray()
+
+    let getAllStaticIds (world: PhysicsWorld) : StaticId[] =
+        world.ThrowIfDisposed()
+        let statics = world.Sim.Statics
+        let result = Collections.Generic.List<StaticId>()
+        for i in 0 .. statics.Count - 1 do
+            result.Add(Interop.handleToStaticId statics.IndexToHandle.[i])
+        result.ToArray()
+
+    let setGravity (gravity: Vector3) (world: PhysicsWorld) : unit =
+        world.ThrowIfDisposed()
+        world.SetGravity(gravity)
+
+    let getGravity (world: PhysicsWorld) : Vector3 =
+        world.ThrowIfDisposed()
+        world.GetGravity()
+
+    let getBodyShape (bodyId: BodyId) (world: PhysicsWorld) : PhysicsShape option =
+        world.ThrowIfDisposed()
+        let handle = Interop.bodyIdToHandle bodyId
+        if not (world.Sim.Bodies.BodyExists(handle)) then
+            None
+        else
+            let bodyRef = world.Sim.Bodies.[handle]
+            let ti = bodyRef.Collidable.Shape
+            if ti.Type = Sphere.Id then
+                let shape = world.Sim.Shapes.GetShape<Sphere>(ti.Index)
+                Some(PhysicsShape.Sphere shape.Radius)
+            elif ti.Type = Box.Id then
+                let shape = world.Sim.Shapes.GetShape<Box>(ti.Index)
+                Some(PhysicsShape.Box(shape.Width, shape.Height, shape.Length))
+            elif ti.Type = Capsule.Id then
+                let shape = world.Sim.Shapes.GetShape<Capsule>(ti.Index)
+                Some(PhysicsShape.Capsule(shape.Radius, shape.Length))
+            elif ti.Type = Cylinder.Id then
+                let shape = world.Sim.Shapes.GetShape<Cylinder>(ti.Index)
+                Some(PhysicsShape.Cylinder(shape.Radius, shape.Length))
+            elif ti.Type = Triangle.Id then
+                let shape = world.Sim.Shapes.GetShape<Triangle>(ti.Index)
+                Some(PhysicsShape.Triangle(shape.A, shape.B, shape.C))
+            elif ti.Type = ConvexHull.Id then
+                Some(PhysicsShape.ConvexHull [||])
+            elif ti.Type = Compound.Id then
+                Some(PhysicsShape.Compound [||])
+            elif ti.Type = Mesh.Id then
+                Some(PhysicsShape.Mesh [||])
+            else
+                None

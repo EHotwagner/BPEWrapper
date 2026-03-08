@@ -5,7 +5,7 @@ open System.Numerics
 /// <summary>
 /// BepuFSharp — an idiomatic F# wrapper for BepuPhysics2 v2.
 /// Provides typed handles, discriminated union shapes and constraints,
-/// pipeline-style world management, bulk ECS operations,
+/// pipeline-style world management, bulk game loop operations,
 /// collision events, raycasting, and per-body materials.
 /// </summary>
 [<System.Runtime.CompilerServices.CompilerGenerated>]

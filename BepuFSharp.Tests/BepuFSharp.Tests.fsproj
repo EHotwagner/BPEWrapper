@@ -15,6 +15,7 @@
     <Compile Include="ContactEventTests.fs" />
     <Compile Include="QueryTests.fs" />
     <Compile Include="PropertyTests.fs" />
+    <Compile Include="ImpulseTests.fs" />
     <Compile Include="SurfaceAreaTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
