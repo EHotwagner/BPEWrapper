@@ -406,3 +406,73 @@ module PhysicsWorld =
     let bufferPool (world: PhysicsWorld) : BufferPool =
         world.ThrowIfDisposed()
         world.Pool
+
+    let applyLinearImpulse (bodyId: BodyId) (impulse: Vector3) (world: PhysicsWorld) : unit =
+        world.ThrowIfDisposed()
+        let handle = Interop.bodyIdToHandle bodyId
+        let bodyRef = world.Sim.Bodies.[handle]
+        if not bodyRef.Kinematic then
+            world.Sim.Awakener.AwakenBody(handle)
+            bodyRef.ApplyLinearImpulse(impulse)
+
+    let applyAngularImpulse (bodyId: BodyId) (angularImpulse: Vector3) (world: PhysicsWorld) : unit =
+        world.ThrowIfDisposed()
+        let handle = Interop.bodyIdToHandle bodyId
+        let bodyRef = world.Sim.Bodies.[handle]
+        if not bodyRef.Kinematic then
+            world.Sim.Awakener.AwakenBody(handle)
+            bodyRef.ApplyAngularImpulse(angularImpulse)
+
+    let applyImpulseAtPoint (bodyId: BodyId) (impulse: Vector3) (offset: Vector3) (world: PhysicsWorld) : unit =
+        world.ThrowIfDisposed()
+        let handle = Interop.bodyIdToHandle bodyId
+        let bodyRef = world.Sim.Bodies.[handle]
+        if not bodyRef.Kinematic then
+            world.Sim.Awakener.AwakenBody(handle)
+            bodyRef.ApplyImpulse(impulse, offset)
+
+    let applyForce (bodyId: BodyId) (force: Vector3) (dt: float32) (world: PhysicsWorld) : unit =
+        world.ThrowIfDisposed()
+        let handle = Interop.bodyIdToHandle bodyId
+        let bodyRef = world.Sim.Bodies.[handle]
+        if not bodyRef.Kinematic then
+            world.Sim.Awakener.AwakenBody(handle)
+            bodyRef.ApplyLinearImpulse(force * dt)
+
+    let applyTorque (bodyId: BodyId) (torque: Vector3) (dt: float32) (world: PhysicsWorld) : unit =
+        world.ThrowIfDisposed()
+        let handle = Interop.bodyIdToHandle bodyId
+        let bodyRef = world.Sim.Bodies.[handle]
+        if not bodyRef.Kinematic then
+            world.Sim.Awakener.AwakenBody(handle)
+            bodyRef.ApplyAngularImpulse(torque * dt)
+
+    let applyLinearImpulses (ids: BodyId[]) (impulses: Vector3[]) (world: PhysicsWorld) : unit =
+        world.ThrowIfDisposed()
+        let sim = world.Sim
+        for i in 0 .. ids.Length - 1 do
+            let handle = Interop.bodyIdToHandle ids.[i]
+            let bodyRef = sim.Bodies.[handle]
+            if not bodyRef.Kinematic then
+                sim.Awakener.AwakenBody(handle)
+                bodyRef.ApplyLinearImpulse(impulses.[i])
+
+    let applyAngularImpulses (ids: BodyId[]) (angularImpulses: Vector3[]) (world: PhysicsWorld) : unit =
+        world.ThrowIfDisposed()
+        let sim = world.Sim
+        for i in 0 .. ids.Length - 1 do
+            let handle = Interop.bodyIdToHandle ids.[i]
+            let bodyRef = sim.Bodies.[handle]
+            if not bodyRef.Kinematic then
+                sim.Awakener.AwakenBody(handle)
+                bodyRef.ApplyAngularImpulse(angularImpulses.[i])
+
+    let applyForces (ids: BodyId[]) (forces: Vector3[]) (dt: float32) (world: PhysicsWorld) : unit =
+        world.ThrowIfDisposed()
+        let sim = world.Sim
+        for i in 0 .. ids.Length - 1 do
+            let handle = Interop.bodyIdToHandle ids.[i]
+            let bodyRef = sim.Bodies.[handle]
+            if not bodyRef.Kinematic then
+                sim.Awakener.AwakenBody(handle)
+                bodyRef.ApplyLinearImpulse(forces.[i] * dt)
