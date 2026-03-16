@@ -104,17 +104,14 @@ module PhysicsWorld =
                 let mutable s = Cylinder(radius, length)
                 sim.Shapes.Add(&s)
             | PhysicsShape.Triangle(a, b, c) ->
-                let mutable ma = a
-                let mutable mb = b
-                let mutable mc = c
-                let mutable s = Triangle(&ma, &mb, &mc)
+                let mutable s = Triangle(a, b, c)
                 sim.Shapes.Add(&s)
             | PhysicsShape.ConvexHull points ->
                 if points.Length < 4 then
                     raise (exn (PhysicsError.describe (DegenerateShape "ConvexHull needs at least 4 points")))
                 let mutable center = Vector3.Zero
                 let mutable hull = Unchecked.defaultof<ConvexHull>
-                ConvexHullHelper.CreateShape(Span(points), pool, &center, &hull)
+                ConvexHullHelper.CreateShape(Span(points), pool, &center, &hull) |> ignore
                 sim.Shapes.Add(&hull)
             | PhysicsShape.Compound children ->
                 if children.Length < 1 then
@@ -123,10 +120,11 @@ module PhysicsWorld =
                 pool.Take(children.Length, &buffer)
                 for i in 0 .. children.Length - 1 do
                     let child = children.[i]
+                    let mutable localPose = Interop.poseToRigid child.LocalPose
                     buffer.[i] <-
                         BepuPhysics.Collidables.CompoundChild(
-                            ShapeIndex = Interop.shapeIdToTypedIndex child.Shape,
-                            LocalPose = Interop.poseToRigid child.LocalPose
+                            &localPose,
+                            Interop.shapeIdToTypedIndex child.Shape
                         )
                 let mutable s = Compound(buffer)
                 sim.Shapes.Add(&s)
@@ -137,12 +135,8 @@ module PhysicsWorld =
                 pool.Take(triangles.Length, &buffer)
                 for i in 0 .. triangles.Length - 1 do
                     let (a, b, c) = triangles.[i]
-                    let mutable ma = a
-                    let mutable mb = b
-                    let mutable mc = c
-                    buffer.[i] <- Triangle(&ma, &mb, &mc)
-                let mutable scale = Vector3.One
-                let mutable s = Mesh(buffer, &scale, pool)
+                    buffer.[i] <- Triangle(a, b, c)
+                let mutable s = Mesh(buffer, Vector3.One, pool)
                 sim.Shapes.Add(&s)
         Interop.typedIndexToShapeId ti
 
@@ -388,9 +382,7 @@ module PhysicsWorld =
     let raycast (origin: Vector3) (direction: Vector3) (maxDistance: float32) (world: PhysicsWorld) : RayHit option =
         world.ThrowIfDisposed()
         let mutable handler = Queries.SingleHitHandler(maxDistance)
-        let mutable o = origin
-        let mutable d = direction
-        world.Sim.RayCast(&o, &d, maxDistance, &handler)
+        world.Sim.RayCast(origin, direction, maxDistance, world.Pool, &handler)
         match handler.Hit with
         | ValueSome hit -> Some hit
         | ValueNone -> None
@@ -398,9 +390,7 @@ module PhysicsWorld =
     let raycastAll (origin: Vector3) (direction: Vector3) (maxDistance: float32) (world: PhysicsWorld) : RayHit[] =
         world.ThrowIfDisposed()
         let mutable handler = Queries.MultiHitHandler(16)
-        let mutable o = origin
-        let mutable d = direction
-        world.Sim.RayCast(&o, &d, maxDistance, &handler)
+        world.Sim.RayCast(origin, direction, maxDistance, world.Pool, &handler)
         let result = handler.Hits.ToArray()
         Array.sortInPlaceBy (fun (h: RayHit) -> h.Distance) result
         result

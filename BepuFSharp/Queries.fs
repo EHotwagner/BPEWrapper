@@ -21,7 +21,7 @@ type SingleHitHandler =
         member _.AllowTest(_collidable: CollidableReference, _childIndex: int) : bool = true
 
         [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
-        member this.OnRayHit(ray: RayData inref, maximumT: float32 byref, t: float32, normal: Vector3 inref, collidable: CollidableReference, _childIndex: int) =
+        member this.OnRayHit(ray: RayData inref, maximumT: float32 byref, t: float32, normal: Vector3, collidable: CollidableReference, _childIndex: int) =
             if t < this.MaxT then
                 this.MaxT <- t
                 maximumT <- t
@@ -55,7 +55,7 @@ type MultiHitHandler =
         member _.AllowTest(_collidable: CollidableReference, _childIndex: int) : bool = true
 
         [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
-        member this.OnRayHit(ray: RayData inref, _maximumT: float32 byref, t: float32, normal: Vector3 inref, collidable: CollidableReference, _childIndex: int) =
+        member this.OnRayHit(ray: RayData inref, _maximumT: float32 byref, t: float32, normal: Vector3, collidable: CollidableReference, _childIndex: int) =
             let hitPos = ray.Origin + ray.Direction * t
             let body, static' =
                 if collidable.Mobility <> CollidableMobility.Static then

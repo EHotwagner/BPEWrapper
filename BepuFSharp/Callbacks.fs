@@ -149,7 +149,7 @@ type DefaultPoseIntegratorCallbacks =
 
         member this.PrepareForIntegration(dt: float32) =
             let gravityDt = this.Gravity * dt
-            Vector3Wide.Broadcast(&gravityDt, &this.GravityWideDt)
+            Vector3Wide.Broadcast(gravityDt, &this.GravityWideDt)
 
         member this.IntegrateVelocity(
             _bodyIndices: Vector<int>,
