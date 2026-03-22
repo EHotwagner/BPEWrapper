@@ -73,11 +73,56 @@ module PhysicsWorld =
     /// Remove a constraint.
     val removeConstraint: ConstraintId -> PhysicsWorld -> unit
 
+    /// Find all bodies and statics that overlap a shape at a given pose.
+    /// Pass None for filter to test against all bodies.
+    val overlap:
+        shape: PhysicsShape ->
+        pose: Pose ->
+        filter: CollisionFilter option ->
+        PhysicsWorld ->
+        OverlapResult[]
+
+    /// Sweep a shape along a linear path and return the first hit.
+    /// Pass None for filter to test against all bodies.
+    val sweepCast:
+        shape: PhysicsShape ->
+        pose: Pose ->
+        direction: Vector3 ->
+        maxDistance: float32 ->
+        filter: CollisionFilter option ->
+        PhysicsWorld ->
+        SweepHit option
+
     /// Cast a ray and return the closest hit.
-    val raycast: origin: Vector3 -> direction: Vector3 -> maxDistance: float32 -> PhysicsWorld -> RayHit option
+    /// Pass None for filter to test against all bodies.
+    val raycast: origin: Vector3 -> direction: Vector3 -> maxDistance: float32 -> filter: CollisionFilter option -> PhysicsWorld -> RayHit option
 
     /// Cast a ray and return all hits sorted by distance.
-    val raycastAll: origin: Vector3 -> direction: Vector3 -> maxDistance: float32 -> PhysicsWorld -> RayHit[]
+    /// Pass None for filter to test against all bodies.
+    val raycastAll: origin: Vector3 -> direction: Vector3 -> maxDistance: float32 -> filter: CollisionFilter option -> PhysicsWorld -> RayHit[]
+
+    /// Retrieve the constraint description for a given constraint.
+    /// Returns None if the constraint does not exist or has been removed.
+    val getConstraintDescription: ConstraintId -> PhysicsWorld -> ConstraintDesc option
+
+    /// Check whether a constraint exists and is active.
+    val constraintExists: ConstraintId -> PhysicsWorld -> bool
+
+    /// Retrieve the two body IDs connected by a constraint.
+    /// Returns None if the constraint does not exist.
+    val getConstraintBodies: ConstraintId -> PhysicsWorld -> (BodyId * BodyId) option
+
+    /// Change the collision filter of a dynamic or kinematic body.
+    val setCollisionFilter: BodyId -> CollisionFilter -> PhysicsWorld -> unit
+
+    /// Change the collision filter of a static body.
+    val setStaticCollisionFilter: StaticId -> CollisionFilter -> PhysicsWorld -> unit
+
+    /// Change the material properties of a dynamic or kinematic body.
+    val setMaterial: BodyId -> MaterialProperties -> PhysicsWorld -> unit
+
+    /// Change the material properties of a static body.
+    val setStaticMaterial: StaticId -> MaterialProperties -> PhysicsWorld -> unit
 
     /// Get contact events from the last completed simulation step.
     val getContactEvents: PhysicsWorld -> ContactEvent[]

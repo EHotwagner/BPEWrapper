@@ -69,6 +69,19 @@ type MotorSettings = { MaxForce: float32; Damping: float32 }
 [<Struct>]
 type CollisionFilter = { Group: uint32; Mask: uint32 }
 
+[<Struct>]
+type SweepHit =
+    { Body: BodyId voption
+      Static: StaticId voption
+      Position: Vector3
+      Normal: Vector3
+      Distance: float32 }
+
+[<Struct>]
+type OverlapResult =
+    { Body: BodyId voption
+      Static: StaticId voption }
+
 [<RequireQualifiedAccess>]
 module Pose =
     let create (position: Vector3) (orientation: Quaternion) : Pose =

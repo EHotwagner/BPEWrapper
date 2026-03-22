@@ -137,6 +137,28 @@ type CollisionFilter =
       /// Collision layer bitmask.
       Mask: uint32 }
 
+/// Result of a sweep cast query — the first shape hit along a swept path.
+[<Struct>]
+type SweepHit =
+    { /// Dynamic or kinematic body hit (ValueNone if a static was hit).
+      Body: BodyId voption
+      /// Static body hit (ValueNone if a dynamic/kinematic was hit).
+      Static: StaticId voption
+      /// World-space position of the contact point.
+      Position: Vector3
+      /// Surface normal at the contact point (unit length).
+      Normal: Vector3
+      /// Parametric distance along the sweep path where contact occurred.
+      Distance: float32 }
+
+/// A single body or static identified by an overlap query.
+[<Struct>]
+type OverlapResult =
+    { /// Dynamic or kinematic body (ValueNone if a static was found).
+      Body: BodyId voption
+      /// Static body (ValueNone if a dynamic/kinematic was found).
+      Static: StaticId voption }
+
 /// Functions for creating and working with Pose values.
 [<RequireQualifiedAccess>]
 module Pose =

@@ -30,5 +30,6 @@ let tests = testList "SurfaceArea" [
     compareModule "Shapes"
     compareModule "Bodies"
     compareModule "Constraints"
+    compareModule "StrideInterop"
     compareModule "PhysicsWorld"
 ]

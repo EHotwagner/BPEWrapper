@@ -10,6 +10,7 @@ open BepuUtilities.Memory
 [<Sealed>]
 type PhysicsWorld internal (sim: Simulation, pool: BufferPool, threadDispatcher: ThreadDispatcher option, config: PhysicsConfig, eventBuffer: ContactEvents.ContactEventBuffer, materialTable: Collections.Generic.Dictionary<int, MaterialProperties>, filterTable: Collections.Generic.Dictionary<int, CollisionFilter>) =
     let mutable disposed = false
+    let constraintTypeRegistry = Collections.Generic.Dictionary<int, int>()
 
     member internal _.Sim = sim
     member internal _.Pool = pool
@@ -19,6 +20,7 @@ type PhysicsWorld internal (sim: Simulation, pool: BufferPool, threadDispatcher:
     member internal _.Config = config
     member internal _.EventBuffer = eventBuffer
     member internal _.IsDisposed = disposed
+    member internal _.ConstraintTypeRegistry = constraintTypeRegistry
 
     member internal _.ThrowIfDisposed() =
         if disposed then
@@ -281,6 +283,7 @@ module PhysicsWorld =
         for i in constraints.Count - 1 .. -1 .. 0 do
             let constraintRef = constraints.[i]
             let ch = constraintRef.ConnectingConstraintHandle
+            world.ConstraintTypeRegistry.Remove(ch.Value) |> ignore
             world.Sim.Solver.Remove(ch)
         world.Sim.Bodies.Remove(handle)
         world.MaterialTable.Remove(handle.Value) |> ignore
@@ -372,28 +375,246 @@ module PhysicsWorld =
                     LocalDirection = direction,
                     SpringSettings = Interop.springToBepu spring)
                 solver.Add(handleA, handleB, &c)
+        let typeTag =
+            match desc with
+            | ConstraintDesc.BallSocket _ -> 0
+            | ConstraintDesc.Hinge _ -> 1
+            | ConstraintDesc.Weld _ -> 2
+            | ConstraintDesc.DistanceLimit _ -> 3
+            | ConstraintDesc.DistanceSpring _ -> 4
+            | ConstraintDesc.SwingLimit _ -> 5
+            | ConstraintDesc.TwistLimit _ -> 6
+            | ConstraintDesc.LinearAxisMotor _ -> 7
+            | ConstraintDesc.AngularMotor _ -> 8
+            | ConstraintDesc.PointOnLine _ -> 9
+        world.ConstraintTypeRegistry.[ch.Value] <- typeTag
         Interop.handleToConstraintId ch
 
     let removeConstraint (constraintId: ConstraintId) (world: PhysicsWorld) : unit =
         world.ThrowIfDisposed()
         let handle = Interop.constraintIdToHandle constraintId
+        world.ConstraintTypeRegistry.Remove(handle.Value) |> ignore
         world.Sim.Solver.Remove(handle)
 
-    let raycast (origin: Vector3) (direction: Vector3) (maxDistance: float32) (world: PhysicsWorld) : RayHit option =
+    let overlap (shape: PhysicsShape) (pose: Pose) (filter: CollisionFilter option) (world: PhysicsWorld) : OverlapResult[] =
         world.ThrowIfDisposed()
-        let mutable handler = Queries.SingleHitHandler(maxDistance)
+        let filterOpt =
+            match filter with
+            | Some f -> ValueSome f
+            | None -> ValueNone
+        // Compute bounding box for the query shape at the given pose
+        let mutable rigidPose = Interop.poseToRigid pose
+        let mutable min = Vector3.Zero
+        let mutable max = Vector3.Zero
+        let hasBounds =
+            match shape with
+            | PhysicsShape.Sphere radius ->
+                if radius <= 0.0f then false
+                else
+                    let mutable s = BepuPhysics.Collidables.Sphere(radius)
+                    s.ComputeBounds(rigidPose.Orientation, &min, &max)
+                    min <- min + rigidPose.Position
+                    max <- max + rigidPose.Position
+                    true
+            | PhysicsShape.Box(w, h, l) ->
+                if w <= 0.0f || h <= 0.0f || l <= 0.0f then false
+                else
+                    let mutable s = BepuPhysics.Collidables.Box(w, h, l)
+                    s.ComputeBounds(rigidPose.Orientation, &min, &max)
+                    min <- min + rigidPose.Position
+                    max <- max + rigidPose.Position
+                    true
+            | PhysicsShape.Capsule(radius, length) ->
+                if radius <= 0.0f || length <= 0.0f then false
+                else
+                    let mutable s = BepuPhysics.Collidables.Capsule(radius, length)
+                    s.ComputeBounds(rigidPose.Orientation, &min, &max)
+                    min <- min + rigidPose.Position
+                    max <- max + rigidPose.Position
+                    true
+            | PhysicsShape.Cylinder(radius, length) ->
+                if radius <= 0.0f || length <= 0.0f then false
+                else
+                    let mutable s = BepuPhysics.Collidables.Cylinder(radius, length)
+                    s.ComputeBounds(rigidPose.Orientation, &min, &max)
+                    min <- min + rigidPose.Position
+                    max <- max + rigidPose.Position
+                    true
+            | _ ->
+                // For Triangle, ConvexHull, Compound, Mesh — use a generous AABB
+                // based on a bounding sphere fallback
+                false
+        if not hasBounds then
+            Array.empty
+        else
+            // Query both active and static broad-phase trees
+            let mutable activeCollector = Queries.ActiveOverlapCollector(filterOpt, world.FilterTable, world.Sim.BroadPhase)
+            world.Sim.BroadPhase.ActiveTree.GetOverlaps(min, max, world.Pool, &activeCollector)
+            let mutable staticCollector = Queries.StaticOverlapCollector(activeCollector.Candidates, filterOpt, world.FilterTable, world.Sim.BroadPhase)
+            world.Sim.BroadPhase.StaticTree.GetOverlaps(min, max, world.Pool, &staticCollector)
+            let candidates = activeCollector.Candidates
+            let results = ResizeArray<OverlapResult>(candidates.Count)
+            for i in 0 .. candidates.Count - 1 do
+                let c = candidates.[i]
+                if c.Mobility <> BepuPhysics.Collidables.CollidableMobility.Static then
+                    results.Add({
+                        Body = ValueSome(Interop.handleToBodyId (BepuPhysics.BodyHandle(c.RawHandleValue)))
+                        Static = ValueNone
+                    })
+                else
+                    results.Add({
+                        Body = ValueNone
+                        Static = ValueSome(Interop.handleToStaticId (BepuPhysics.StaticHandle(c.RawHandleValue)))
+                    })
+            results.ToArray()
+
+    let sweepCast (shape: PhysicsShape) (pose: Pose) (direction: Vector3) (maxDistance: float32) (filter: CollisionFilter option) (world: PhysicsWorld) : SweepHit option =
+        world.ThrowIfDisposed()
+        let filterOpt =
+            match filter with
+            | Some f -> ValueSome f
+            | None -> ValueNone
+        let mutable handler = Queries.SweepHitHandler(maxDistance, filterOpt, world.FilterTable)
+        let mutable rigidPose = Interop.poseToRigid pose
+        let velocity = BepuPhysics.BodyVelocity(direction, Vector3.Zero)
+        let mutable vel = velocity
+        Queries.dispatchSweep shape rigidPose vel maxDistance world.Sim world.Pool &handler
+        match handler.Hit with
+        | ValueSome hit -> Some hit
+        | ValueNone -> None
+
+    let raycast (origin: Vector3) (direction: Vector3) (maxDistance: float32) (filter: CollisionFilter option) (world: PhysicsWorld) : RayHit option =
+        world.ThrowIfDisposed()
+        let filterOpt = match filter with Some f -> ValueSome f | None -> ValueNone
+        let mutable handler = Queries.SingleHitHandler(maxDistance, filterOpt, world.FilterTable)
         world.Sim.RayCast(origin, direction, maxDistance, world.Pool, &handler)
         match handler.Hit with
         | ValueSome hit -> Some hit
         | ValueNone -> None
 
-    let raycastAll (origin: Vector3) (direction: Vector3) (maxDistance: float32) (world: PhysicsWorld) : RayHit[] =
+    let raycastAll (origin: Vector3) (direction: Vector3) (maxDistance: float32) (filter: CollisionFilter option) (world: PhysicsWorld) : RayHit[] =
         world.ThrowIfDisposed()
-        let mutable handler = Queries.MultiHitHandler(16)
+        let filterOpt = match filter with Some f -> ValueSome f | None -> ValueNone
+        let mutable handler = Queries.MultiHitHandler(16, filterOpt, world.FilterTable)
         world.Sim.RayCast(origin, direction, maxDistance, world.Pool, &handler)
         let result = handler.Hits.ToArray()
         Array.sortInPlaceBy (fun (h: RayHit) -> h.Distance) result
         result
+
+    let getConstraintDescription (constraintId: ConstraintId) (world: PhysicsWorld) : ConstraintDesc option =
+        world.ThrowIfDisposed()
+        let handle = Interop.constraintIdToHandle constraintId
+        let mutable typeTag = 0
+        if not (world.ConstraintTypeRegistry.TryGetValue(handle.Value, &typeTag)) then
+            None
+        else
+            let solver = world.Sim.Solver
+            match typeTag with
+            | 0 ->
+                let mutable desc = Unchecked.defaultof<BepuPhysics.Constraints.BallSocket>
+                solver.GetDescription(handle, &desc)
+                Some (ConstraintDesc.BallSocket(desc.LocalOffsetA, desc.LocalOffsetB, Interop.bepuToSpring desc.SpringSettings))
+            | 1 ->
+                let mutable desc = Unchecked.defaultof<BepuPhysics.Constraints.Hinge>
+                solver.GetDescription(handle, &desc)
+                Some (ConstraintDesc.Hinge(desc.LocalHingeAxisA, desc.LocalHingeAxisB, desc.LocalOffsetA, desc.LocalOffsetB, Interop.bepuToSpring desc.SpringSettings))
+            | 2 ->
+                let mutable desc = Unchecked.defaultof<BepuPhysics.Constraints.Weld>
+                solver.GetDescription(handle, &desc)
+                Some (ConstraintDesc.Weld(desc.LocalOffset, desc.LocalOrientation, Interop.bepuToSpring desc.SpringSettings))
+            | 3 ->
+                let mutable desc = Unchecked.defaultof<BepuPhysics.Constraints.DistanceLimit>
+                solver.GetDescription(handle, &desc)
+                Some (ConstraintDesc.DistanceLimit(desc.LocalOffsetA, desc.LocalOffsetB, desc.MinimumDistance, desc.MaximumDistance, Interop.bepuToSpring desc.SpringSettings))
+            | 4 ->
+                let mutable desc = Unchecked.defaultof<BepuPhysics.Constraints.DistanceServo>
+                solver.GetDescription(handle, &desc)
+                Some (ConstraintDesc.DistanceSpring(desc.LocalOffsetA, desc.LocalOffsetB, desc.TargetDistance, Interop.bepuToSpring desc.SpringSettings))
+            | 5 ->
+                let mutable desc = Unchecked.defaultof<BepuPhysics.Constraints.SwingLimit>
+                solver.GetDescription(handle, &desc)
+                let maxAngle = System.MathF.Acos(desc.MinimumDot)
+                Some (ConstraintDesc.SwingLimit(desc.AxisLocalA, desc.AxisLocalB, maxAngle, Interop.bepuToSpring desc.SpringSettings))
+            | 6 ->
+                let mutable desc = Unchecked.defaultof<BepuPhysics.Constraints.TwistLimit>
+                solver.GetDescription(handle, &desc)
+                Some (ConstraintDesc.TwistLimit(Vector3.UnitY, Vector3.UnitY, desc.MinimumAngle, desc.MaximumAngle, Interop.bepuToSpring desc.SpringSettings))
+            | 7 ->
+                let mutable desc = Unchecked.defaultof<BepuPhysics.Constraints.LinearAxisMotor>
+                solver.GetDescription(handle, &desc)
+                Some (ConstraintDesc.LinearAxisMotor(desc.LocalOffsetA, desc.LocalOffsetB, desc.LocalAxis, desc.TargetVelocity, Interop.bepuToMotorSettings desc.Settings))
+            | 8 ->
+                let mutable desc = Unchecked.defaultof<BepuPhysics.Constraints.AngularMotor>
+                solver.GetDescription(handle, &desc)
+                Some (ConstraintDesc.AngularMotor(desc.TargetVelocityLocalA, Interop.bepuToMotorSettings desc.Settings))
+            | 9 ->
+                let mutable desc = Unchecked.defaultof<BepuPhysics.Constraints.PointOnLineServo>
+                solver.GetDescription(handle, &desc)
+                Some (ConstraintDesc.PointOnLine(desc.LocalOffsetA, desc.LocalDirection, desc.LocalOffsetB, Interop.bepuToSpring desc.SpringSettings))
+            | _ -> None
+
+    let constraintExists (constraintId: ConstraintId) (world: PhysicsWorld) : bool =
+        world.ThrowIfDisposed()
+        let handle = Interop.constraintIdToHandle constraintId
+        world.ConstraintTypeRegistry.ContainsKey(handle.Value)
+
+    let getConstraintBodies (constraintId: ConstraintId) (world: PhysicsWorld) : (BodyId * BodyId) option =
+        world.ThrowIfDisposed()
+        let handle = Interop.constraintIdToHandle constraintId
+        if not (world.ConstraintTypeRegistry.ContainsKey(handle.Value)) then
+            None
+        else
+            // Scan all bodies to find which two are connected by this constraint
+            let mutable bodyA = Unchecked.defaultof<BodyHandle>
+            let mutable bodyB = Unchecked.defaultof<BodyHandle>
+            let mutable found = 0
+            let bodies = world.Sim.Bodies
+            for bodyIndex in 0 .. bodies.ActiveSet.Count - 1 do
+                if found < 2 then
+                    let bodyHandle = bodies.ActiveSet.IndexToHandle.[bodyIndex]
+                    let bodyRef = bodies.[bodyHandle]
+                    let constraints = bodyRef.Constraints
+                    for ci in 0 .. constraints.Count - 1 do
+                        if constraints.[ci].ConnectingConstraintHandle = handle then
+                            if found = 0 then bodyA <- bodyHandle
+                            elif found = 1 then bodyB <- bodyHandle
+                            found <- found + 1
+            if found >= 2 then
+                Some (Interop.handleToBodyId bodyA, Interop.handleToBodyId bodyB)
+            else
+                None
+
+    let setCollisionFilter (bodyId: BodyId) (filter: CollisionFilter) (world: PhysicsWorld) : unit =
+        world.ThrowIfDisposed()
+        let handle = Interop.bodyIdToHandle bodyId
+        let key = handle.Value
+        if not (world.FilterTable.ContainsKey(key)) then
+            raise (exn (PhysicsError.describe (InvalidBodyHandle bodyId)))
+        world.FilterTable.[key] <- filter
+
+    let setStaticCollisionFilter (staticId: StaticId) (filter: CollisionFilter) (world: PhysicsWorld) : unit =
+        world.ThrowIfDisposed()
+        let handle = Interop.staticIdToHandle staticId
+        let key = handle.Value ||| 0x40000000
+        if not (world.FilterTable.ContainsKey(key)) then
+            raise (exn (PhysicsError.describe (InvalidStaticHandle staticId)))
+        world.FilterTable.[key] <- filter
+
+    let setMaterial (bodyId: BodyId) (material: MaterialProperties) (world: PhysicsWorld) : unit =
+        world.ThrowIfDisposed()
+        let handle = Interop.bodyIdToHandle bodyId
+        let key = handle.Value
+        if not (world.MaterialTable.ContainsKey(key)) then
+            raise (exn (PhysicsError.describe (InvalidBodyHandle bodyId)))
+        world.MaterialTable.[key] <- material
+
+    let setStaticMaterial (staticId: StaticId) (material: MaterialProperties) (world: PhysicsWorld) : unit =
+        world.ThrowIfDisposed()
+        let handle = Interop.staticIdToHandle staticId
+        let key = handle.Value ||| 0x40000000
+        if not (world.MaterialTable.ContainsKey(key)) then
+            raise (exn (PhysicsError.describe (InvalidStaticHandle staticId)))
+        world.MaterialTable.[key] <- material
 
     let getContactEvents (world: PhysicsWorld) : ContactEvent[] =
         world.ThrowIfDisposed()
