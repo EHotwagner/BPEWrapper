@@ -2,7 +2,9 @@
 
 *Created using [speckit](https://github.com/github/spec-kit) with Claude Code (Opus 4.6). See the [project constitution](.specify/memory/constitution.md) and [documentation skills](.specify/memory/constitution.md#vi-comprehensive-documentation).*
 
-An idiomatic F# wrapper for [BepuPhysics2](https://github.com/bepu/bepuphysics2) v2, designed for data-oriented game engines.
+An idiomatic F# wrapper for [BepuPhysics2](https://github.com/bepu/bepuphysics2) v2 with [Stride3D](https://www.stride3d.net/) integration, designed for data-oriented game engines.
+
+Built on [BepuPhysics 2.5.0-beta.28](https://github.com/bepu/bepuphysics2) and [Stride.BepuPhysics 4.3.0.2507](https://doc.stride3d.net/latest/en/manual/physics/bepu/index.html).
 
 **[Documentation](https://ehotwagner.github.io/BPEWrapper/)** · **[API Reference](https://ehotwagner.github.io/BPEWrapper/reference/index.html)**
 
@@ -117,7 +119,12 @@ PhysicsWorld.readPoses bodyIds poses world  // no allocation
 | Collision filtering | Implement in callback struct | `CollisionFilter` with `group`/`mask` per body |
 | Materials | Implement in callback struct | `MaterialProperties` per body with auto-blending |
 | Bulk game loop sync | Manual loop + struct access | `readPoses`/`writePoses` — zero allocation |
-| Raycasting | Implement `IRayHitHandler` struct | `raycast`/`raycastAll` returning `RayHit option` / `RayHit[]` |
+| Raycasting | Implement `IRayHitHandler` struct | `raycast`/`raycastAll` with optional collision filter |
+| Sweep casts | Implement `ISweepHitHandler` struct | `sweepCast` returning `SweepHit option` |
+| Overlap queries | Manual broad-phase + narrow-phase | `overlap` returning `OverlapResult[]` |
+| Constraint readback | Not exposed | `getConstraintDescription`/`getConstraintBodies` |
+| Runtime modification | Remove and re-add body | `setCollisionFilter`/`setMaterial` in-place |
+| Stride3D interop | Manual conversion code | `StrideInterop` module — shapes, layers, materials |
 | FSI scripting | Complex `#r` setup + callback boilerplate | `#load "prelude.fsx"` and go |
 | Escape hatch | N/A | `PhysicsWorld.simulation` for raw access |
 
@@ -125,21 +132,27 @@ PhysicsWorld.readPoses bodyIds poses world  // no allocation
 
 - 8 shape types (sphere, box, capsule, cylinder, triangle, convex hull, compound, mesh)
 - 10 constraint types (ball socket, hinge, weld, distance limit/spring, swing/twist limits, motors, point-on-line)
-- Single-hit and multi-hit raycasting
+- Sweep cast queries — volumetric collision testing along a path
+- Overlap queries — find all bodies intersecting a volume
+- Single-hit and multi-hit raycasting with optional collision layer filtering
+- Constraint readback — retrieve parameters and connected bodies for serialization
+- Runtime collision filter and material modification without body re-creation
 - 32-layer collision filtering via bitmask
 - Per-body material properties with friction/spring blending
 - Double-buffered contact events (began/persisted/ended)
 - Bulk pose and velocity read/write for game loop integration
+- [Stride3D](https://www.stride3d.net/) interop — bidirectional conversion between BepuFSharp and [Stride.BepuPhysics](https://doc.stride3d.net/latest/en/manual/physics/bepu/index.html) types (shapes, collision layers, materials)
 - `.fsi` signature files for every public module
 - Surface-area baseline tests preventing accidental API drift
-- 60 tests (Expecto + FsCheck property tests)
-- FSI prelude script + 8 example scripts
+- 101 tests (Expecto + FsCheck property tests)
+- FSI prelude script + 9 example scripts
 - FSharp.Formatting documentation site with literate tutorials and ADRs
 
 ## Requirements
 
 - .NET 10.0 SDK
-- BepuPhysics 2.4.0 / BepuUtilities 2.4.0 (pulled automatically via NuGet)
+- [BepuPhysics 2.5.0-beta.28](https://github.com/bepu/bepuphysics2) / BepuUtilities 2.5.0-beta.28 (pulled automatically via NuGet)
+- [Stride.BepuPhysics 4.3.0.2507](https://doc.stride3d.net/latest/en/manual/physics/bepu/index.html) (pulled automatically via NuGet — required for Stride interop)
 
 ## Build
 

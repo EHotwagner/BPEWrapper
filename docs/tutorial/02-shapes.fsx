@@ -62,8 +62,8 @@ BepuFSharp represents shapes with the `PhysicsShape` discriminated union.
 Let's register one of each type with a physics world:
 *)
 
-#r "nuget: BepuPhysics, 2.4.0"
-#r "nuget: BepuUtilities, 2.4.0"
+#r "nuget: BepuPhysics, 2.5.0-beta.28"
+#r "nuget: BepuUtilities, 2.5.0-beta.28"
 (*** hide ***)
 #r "../../BepuFSharp/bin/Release/net10.0/BepuFSharp.dll"
 (*** show ***)

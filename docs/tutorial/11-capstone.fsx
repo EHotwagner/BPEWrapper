@@ -48,8 +48,8 @@ We will build a small arena:
 ## Step 1: Create the World (Chapter 1)
 *)
 
-#r "nuget: BepuPhysics, 2.4.0"
-#r "nuget: BepuUtilities, 2.4.0"
+#r "nuget: BepuPhysics, 2.5.0-beta.28"
+#r "nuget: BepuUtilities, 2.5.0-beta.28"
 (*** hide ***)
 #r "../../BepuFSharp/bin/Release/net10.0/BepuFSharp.dll"
 (*** show ***)
@@ -245,6 +245,7 @@ let allHits =
         (Vector3(-9.0f, 1.0f, 0.0f))
         (Vector3(1.0f, 0.0f, 0.0f))
         18.0f
+        None
         world
 
 let raySummary =

@@ -62,8 +62,8 @@ The engine returns a **RayHit** with:
 Let's set up a scene with several objects and cast a ray through it:
 *)
 
-#r "nuget: BepuPhysics, 2.4.0"
-#r "nuget: BepuUtilities, 2.4.0"
+#r "nuget: BepuPhysics, 2.5.0-beta.28"
+#r "nuget: BepuUtilities, 2.5.0-beta.28"
 (*** hide ***)
 #r "../../BepuFSharp/bin/Release/net10.0/BepuFSharp.dll"
 (*** show ***)
@@ -115,6 +115,7 @@ let hit =
         (Vector3(0.0f, 1.0f, 0.0f))     // origin
         (Vector3(1.0f, 0.0f, 0.0f))     // direction (+X)
         20.0f                             // max distance
+        None                              // no collision filter
         world
 
 (*** include-value: hit ***)
@@ -156,6 +157,7 @@ let missedHit =
         (Vector3(0.0f, 1.0f, 0.0f))
         (Vector3(0.0f, 1.0f, 0.0f))     // straight up
         100.0f
+        None
         world
 
 (*** include-value: missedHit ***)
@@ -174,6 +176,7 @@ let allHits =
         (Vector3(-5.0f, 1.0f, 0.0f))    // start behind the targets
         (Vector3(1.0f, 0.0f, 0.0f))     // direction (+X)
         30.0f                             // max distance
+        None                              // no collision filter
         world
 
 (*** include-value: allHits ***)
@@ -197,6 +200,7 @@ let groundHit =
         characterPos
         (Vector3(0.0f, -1.0f, 0.0f))    // cast downward
         100.0f
+        None
         world
 
 let groundDistance =
@@ -220,6 +224,7 @@ let floorHit =
         (Vector3(15.0f, 5.0f, 0.0f))    // above the floor, away from other objects
         (Vector3(0.0f, -1.0f, 0.0f))    // downward
         10.0f
+        None
         world
 
 let floorHitInfo =

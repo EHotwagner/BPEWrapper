@@ -10,25 +10,33 @@ index: 0
 (**
 # BepuFSharp
 
-An idiomatic F# wrapper for [BepuPhysics2](https://github.com/bepu/bepuphysics2) v2,
-designed for data-oriented game engines.
+An idiomatic F# wrapper for [BepuPhysics2](https://github.com/bepu/bepuphysics2) v2 with
+[Stride3D](https://www.stride3d.net/) integration, designed for data-oriented game engines.
+
+Built on [BepuPhysics 2.5.0-beta.28](https://github.com/bepu/bepuphysics2) and
+[Stride.BepuPhysics 4.3.0.2507](https://doc.stride3d.net/latest/en/manual/physics/bepu/index.html).
 
 ## Features
 
 - **Functional API** — Pipeline-friendly module functions (`world |> PhysicsWorld.addBody desc`)
 - **Type-safe handles** — Opaque `BodyId`, `StaticId`, `ShapeId`, `ConstraintId` prevent handle misuse
 - **Discriminated unions** — `PhysicsShape` (8 variants) and `ConstraintDesc` (10 variants) for exhaustive matching
+- **Sweep casts** — Volumetric collision testing along a path with `sweepCast`
+- **Overlap queries** — Find all bodies intersecting a volume with `overlap`
+- **Filtered raycasting** — Single-hit and multi-hit queries with optional collision layer filtering
+- **Constraint readback** — Retrieve constraint parameters and connected bodies for serialization
+- **Runtime modification** — Change collision filters and materials without removing bodies
 - **Zero-allocation bulk ops** — `readPoses`/`writePoses` populate pre-allocated arrays for game loop sync
 - **Contact events** — Double-buffered began/persisted/ended events as flat struct arrays
 - **Collision filtering** — 32-layer bitmask system via group/mask fields
-- **Raycasting** — Single-hit and multi-hit queries returning typed results
 - **Per-body materials** — Friction and spring properties with automatic blending
+- **[Stride3D](https://www.stride3d.net/) interop** — Bidirectional type conversion via the `StrideInterop` module
 
 ## Quick Start
 *)
 
-#r "nuget: BepuPhysics, 2.4.0"
-#r "nuget: BepuUtilities, 2.4.0"
+#r "nuget: BepuPhysics, 2.5.0-beta.28"
+#r "nuget: BepuUtilities, 2.5.0-beta.28"
 (*** hide ***)
 #r "../BepuFSharp/bin/Release/net10.0/BepuFSharp.dll"
 (*** show ***)

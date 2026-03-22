@@ -23,8 +23,8 @@ A typical game loop synchronizes physics state with engine transforms:
 3. **Read** dynamic body poses from physics back to engine transforms
 *)
 
-#r "nuget: BepuPhysics, 2.4.0"
-#r "nuget: BepuUtilities, 2.4.0"
+#r "nuget: BepuPhysics, 2.5.0-beta.28"
+#r "nuget: BepuUtilities, 2.5.0-beta.28"
 (*** hide ***)
 #r "../BepuFSharp/bin/Release/net10.0/BepuFSharp.dll"
 (*** show ***)
