@@ -16,6 +16,7 @@
     <Compile Include="QueryTests.fs" />
     <Compile Include="PropertyTests.fs" />
     <Compile Include="ForceTests.fs" />
+    <Compile Include="StrideInteropTests.fs" />
     <Compile Include="SurfaceAreaTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

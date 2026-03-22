@@ -20,6 +20,12 @@ type DefaultNarrowPhaseCallbacks =
         events: ContactEvents.ContactEventBuffer) =
         { MaterialLookup = materials; FilterLookup = filters; EventBuffer = events }
 
+    member this.UpdateFilter(key: int, filter: CollisionFilter) =
+        this.FilterLookup.[key] <- filter
+
+    member this.UpdateMaterial(key: int, material: MaterialProperties) =
+        this.MaterialLookup.[key] <- material
+
     interface INarrowPhaseCallbacks with
         member _.Initialize(_simulation: Simulation) = ()
 

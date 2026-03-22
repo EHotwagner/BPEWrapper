@@ -19,6 +19,8 @@
     <Compile Include="ContactEvents.fs" />
     <Compile Include="Queries.fs" />
     <Compile Include="Callbacks.fs" />
+    <Compile Include="StrideInterop.fsi" />
+    <Compile Include="StrideInterop.fs" />
     <Compile Include="PhysicsWorld.fsi" />
     <Compile Include="PhysicsWorld.fs" />
   </ItemGroup>
@@ -26,6 +28,7 @@
   <ItemGroup>
     <PackageReference Include="BepuPhysics" Version="2.5.0-beta.28" />
     <PackageReference Include="BepuUtilities" Version="2.5.0-beta.28" />
+    <PackageReference Include="Stride.BepuPhysics" Version="4.3.0.2507" />
   </ItemGroup>
 
 </Project>

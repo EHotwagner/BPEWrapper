@@ -114,4 +114,61 @@ let tests =
             let lowXDist = abs (lowFricPose.Position.X - 5.0f)
             Expect.isTrue (lowXDist >= highXDist * 0.5f || lowFricPose.Position.Y < highFricPose.Position.Y)
                 "Low friction body should slide more or fall further on slope"
+
+        // --- Runtime Filter and Material Modification Tests ---
+
+        testCase "setCollisionFilter: change mask to exclude layer, body passes through" <| fun _ ->
+            use world = PhysicsWorld.create PhysicsConfig.defaults
+            let floorShape = PhysicsWorld.addShape (PhysicsShape.Box(100.0f, 1.0f, 100.0f)) world
+            let floorDesc =
+                { StaticBodyDesc.create floorShape (Pose.ofPosition (Vector3(0.0f, -0.5f, 0.0f))) with
+                    CollisionGroup = 0u; CollisionMask = 0xFFFFFFFFu }
+            let _floor = PhysicsWorld.addStatic floorDesc world
+            let sphereShape = PhysicsWorld.addShape (PhysicsShape.Sphere 0.5f) world
+            let bodyDesc =
+                { DynamicBodyDesc.create sphereShape (Pose.ofPosition (Vector3(0.0f, 2.0f, 0.0f))) 1.0f with
+                    CollisionGroup = 0u; CollisionMask = 0xFFFFFFFFu }
+            let bodyId = PhysicsWorld.addBody bodyDesc world
+            // Step to let it settle on the floor
+            for _ in 1..60 do PhysicsWorld.step (1.0f/60.0f) world
+            let poseBefore = PhysicsWorld.getBodyPose bodyId world
+            // Change mask to exclude layer 0 (floor's layer)
+            PhysicsWorld.setCollisionFilter bodyId { Group = 0u; Mask = 0u } world
+            // Step more — body should fall through floor
+            for _ in 1..120 do PhysicsWorld.step (1.0f/60.0f) world
+            let poseAfter = PhysicsWorld.getBodyPose bodyId world
+            Expect.isTrue (poseAfter.Position.Y < poseBefore.Position.Y - 1.0f)
+                "Body should fall through floor after filter change"
+
+        testCase "setMaterial: change friction to zero" <| fun _ ->
+            use world = PhysicsWorld.create PhysicsConfig.defaults
+            let sphereShape = PhysicsWorld.addShape (PhysicsShape.Sphere 0.5f) world
+            let bodyDesc =
+                { DynamicBodyDesc.create sphereShape (Pose.ofPosition (Vector3(0.0f, 2.0f, 0.0f))) 1.0f with
+                    Material = MaterialProperties.create 10.0f 2.0f 30.0f 1.0f }
+            let bodyId = PhysicsWorld.addBody bodyDesc world
+            // Change material to zero friction
+            PhysicsWorld.setMaterial bodyId (MaterialProperties.create 0.0f 2.0f 30.0f 1.0f) world
+            // Should not throw — just verifying mutation works
+            Expect.isTrue true "setMaterial should succeed"
+
+        testCase "setStaticCollisionFilter: change static body's filter" <| fun _ ->
+            use world = PhysicsWorld.create PhysicsConfig.defaults
+            let floorShape = PhysicsWorld.addShape (PhysicsShape.Box(100.0f, 1.0f, 100.0f)) world
+            let floorDesc =
+                { StaticBodyDesc.create floorShape (Pose.ofPosition (Vector3(0.0f, -0.5f, 0.0f))) with
+                    CollisionGroup = 0u; CollisionMask = 0xFFFFFFFFu }
+            let floorId = PhysicsWorld.addStatic floorDesc world
+            // Change the static's filter — should not throw
+            PhysicsWorld.setStaticCollisionFilter floorId { Group = 1u; Mask = 0xFFFFFFFFu } world
+            Expect.isTrue true "setStaticCollisionFilter should succeed"
+
+        testCase "setCollisionFilter on removed body raises error" <| fun _ ->
+            use world = PhysicsWorld.create PhysicsConfig.defaults
+            let shape = PhysicsWorld.addShape (PhysicsShape.Sphere 0.5f) world
+            let bodyId = PhysicsWorld.addBody (DynamicBodyDesc.create shape Pose.identity 1.0f) world
+            PhysicsWorld.removeBody bodyId world
+            Expect.throws
+                (fun () -> PhysicsWorld.setCollisionFilter bodyId { Group = 0u; Mask = 0u } world)
+                "Should raise error for removed body"
     ]

@@ -1,0 +1,80 @@
+// PhysicsWorld.fsi — additions for 006-stride-bepu-integration
+// These signatures are appended to the existing PhysicsWorld.fsi module.
+
+// --- Sweep Cast (FR-001, FR-002, FR-003) ---
+
+/// Sweep a shape along a linear path and return the first hit.
+/// The shape is defined by its PhysicsShape, starting pose, and direction/distance.
+/// An optional collision filter restricts which bodies are tested.
+val sweepCast:
+    shape: PhysicsShape ->
+    pose: Pose ->
+    direction: Vector3 ->
+    maxDistance: float32 ->
+    ?filter: CollisionFilter ->
+    PhysicsWorld ->
+    SweepHit option
+
+// --- Overlap Queries (FR-004, FR-005, FR-006) ---
+
+/// Find all bodies and statics that overlap a shape at a given pose.
+/// Returns an array of OverlapResult for each intersecting collidable.
+/// An optional collision filter restricts which bodies are tested.
+val overlap:
+    shape: PhysicsShape ->
+    pose: Pose ->
+    ?filter: CollisionFilter ->
+    PhysicsWorld ->
+    OverlapResult[]
+
+// --- Filtered Raycasting (FR-007, FR-008) ---
+// Existing signatures updated with optional filter parameter:
+
+/// Cast a ray and return the closest hit. Optional collision filter.
+val raycast:
+    origin: Vector3 ->
+    direction: Vector3 ->
+    maxDistance: float32 ->
+    ?filter: CollisionFilter ->
+    PhysicsWorld ->
+    RayHit option
+
+/// Cast a ray and return all hits sorted by distance. Optional collision filter.
+val raycastAll:
+    origin: Vector3 ->
+    direction: Vector3 ->
+    maxDistance: float32 ->
+    ?filter: CollisionFilter ->
+    PhysicsWorld ->
+    RayHit[]
+
+// --- Constraint Readback (FR-009, FR-010, FR-011) ---
+
+/// Retrieve the constraint description for a given constraint.
+/// Returns None if the constraint does not exist or has been removed.
+val getConstraintDescription: ConstraintId -> PhysicsWorld -> ConstraintDesc option
+
+/// Check whether a constraint exists and is active.
+val constraintExists: ConstraintId -> PhysicsWorld -> bool
+
+/// Retrieve the two body IDs connected by a constraint.
+/// Returns None if the constraint does not exist.
+val getConstraintBodies: ConstraintId -> PhysicsWorld -> (BodyId * BodyId) option
+
+// --- Runtime Modification (FR-012, FR-013, FR-014) ---
+
+/// Change the collision filter of a dynamic or kinematic body.
+/// Raises InvalidBodyHandle if the body does not exist.
+val setCollisionFilter: BodyId -> CollisionFilter -> PhysicsWorld -> unit
+
+/// Change the collision filter of a static body.
+/// Raises InvalidStaticHandle if the static does not exist.
+val setStaticCollisionFilter: StaticId -> CollisionFilter -> PhysicsWorld -> unit
+
+/// Change the material properties of a dynamic or kinematic body.
+/// Raises InvalidBodyHandle if the body does not exist.
+val setMaterial: BodyId -> MaterialProperties -> PhysicsWorld -> unit
+
+/// Change the material properties of a static body.
+/// Raises InvalidStaticHandle if the static does not exist.
+val setStaticMaterial: StaticId -> MaterialProperties -> PhysicsWorld -> unit

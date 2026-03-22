@@ -1,5 +1,5 @@
-#r "nuget: BepuPhysics, 2.4.0"
-#r "nuget: BepuUtilities, 2.4.0"
+#r "nuget: BepuPhysics, 2.5.0-beta.28"
+#r "nuget: BepuUtilities, 2.5.0-beta.28"
 #r "../BepuFSharp/bin/Release/net10.0/BepuFSharp.dll"
 
 open System.Numerics

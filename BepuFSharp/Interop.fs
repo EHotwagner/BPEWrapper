@@ -61,3 +61,11 @@ let constraintIdToHandle (ConstraintId id) : ConstraintHandle =
 [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
 let handleToConstraintId (h: ConstraintHandle) : ConstraintId =
     ConstraintId h.Value
+
+[<MethodImpl(MethodImplOptions.AggressiveInlining)>]
+let motorSettingsToBepu (ms: BepuFSharp.MotorSettings) : BepuPhysics.Constraints.MotorSettings =
+    BepuPhysics.Constraints.MotorSettings(ms.MaxForce, ms.Damping)
+
+[<MethodImpl(MethodImplOptions.AggressiveInlining)>]
+let bepuToMotorSettings (ms: BepuPhysics.Constraints.MotorSettings) : BepuFSharp.MotorSettings =
+    { MaxForce = ms.MaximumForce; Damping = ms.Damping }

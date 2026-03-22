@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>0.1.0</Version>
+    <Version>0.2.0-beta.1</Version>
     <Authors>BepuFSharp Contributors</Authors>
     <Description>Idiomatic F# wrapper for BepuPhysics2 v2</Description>
     <PackageOutputPath>$(HOME)/.local/share/nuget-local/</PackageOutputPath>
